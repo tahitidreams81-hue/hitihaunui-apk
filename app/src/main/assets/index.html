@@ -619,6 +619,19 @@ body .note-chip{font-size:calc(.8rem * var(--note-scale));}
 .note-size-val{min-width:42px; text-align:right; font-weight:800; font-size:.8rem; color:var(--accent);}
 .note-pref-reset{margin-top:8px; width:100%;}
 .note-preview{margin-top:8px; text-align:center; font-weight:700; text-transform:none;}
+
+/* ---- Importer / Exporter : onglets + sélection de chansons ---- */
+.ie-tabs{display:flex; gap:6px; background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:4px;}
+.ie-tab{flex:1; padding:10px 6px; border:none; border-radius:9px; background:transparent; color:var(--text-dim); font-weight:800; font-size:.8rem; cursor:pointer; min-height:42px; touch-action:manipulation;}
+.ie-tab.active{background:var(--accent); color:#06231d;}
+.ie-quick{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+.ie-quick input[type=number]{width:62px; text-align:center; padding:8px 4px; border-radius:10px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:1rem;}
+.ie-list{display:flex; flex-direction:column; gap:6px; max-height:300px; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+.ie-row{display:flex; align-items:center; gap:10px; padding:8px 10px; border:1px solid var(--border); border-radius:12px; cursor:pointer; background:var(--card2);}
+.ie-row .t{flex:1; min-width:0;}
+.ie-row .t strong{display:block; font-size:.9rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.ie-row .t span{font-size:.72rem; color:var(--text-dim);}
+.ie-search{width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:1rem; text-transform:none !important;}
 </style>
 </head>
 <body class="theme-light">
@@ -1243,6 +1256,11 @@ body .note-chip{font-size:calc(.8rem * var(--note-scale));}
       </div>
       <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:12px;">
         <div class="lbl-w"><strong>📁 Importer / Exporter</strong><span>Garde une copie de ton répertoire ou transfère-le manuellement vers un autre appareil.</span></div>
+        <div class="ie-tabs">
+          <button type="button" class="ie-tab active" id="ie-tab-all" onclick="setIeTab('all')">📁 Tout / Importer</button>
+          <button type="button" class="ie-tab" id="ie-tab-pick" onclick="setIeTab('pick')">✅ Choisir les chansons</button>
+        </div>
+        <div id="ie-pane-all" style="display:flex; flex-direction:column; gap:12px;">
         <div style="display:flex; gap:16px; align-items:center; font-size:13px;">
           <label style="display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="radio" name="importMode" id="importModeAdd" value="add" checked style="width:auto;">Ajouter à mon répertoire</label>
           <label style="display:flex; align-items:center; gap:5px; cursor:pointer;"><input type="radio" name="importMode" id="importModeReplace" value="replace" style="width:auto;">Remplacer mon répertoire</label>
@@ -1252,10 +1270,24 @@ body .note-chip{font-size:calc(.8rem * var(--note-scale));}
           <button class="btn btn-secondary" style="flex:1;" onclick="document.getElementById('import-file-input').click()">⬆️ Importer</button>
         </div>
         <input type="file" id="import-file-input" accept="application/json,.json" style="display:none;" onchange="importData(event)">
-      </div>
-      <div class="settings-row" style="flex-direction:column; align-items:stretch; gap:12px;">
-        <div class="lbl-w"><strong>🆕 Sauvegarde des changements</strong><span>Exporte uniquement les chansons ajoutées ou modifiées depuis ton dernier export de ce type.</span></div>
-        <button class="btn btn-secondary btn-full" onclick="exportChangedData()">⬇️ Exporter les changements</button>
+        </div>
+        <div id="ie-pane-pick" style="display:none; flex-direction:column; gap:10px;">
+          <div class="hint">Choisis les chansons à exporter : tout le répertoire, les dernières ajoutées ou modifiées, ou une à une.</div>
+          <input type="search" id="ie-search" class="ie-search" placeholder="🔍 Rechercher un chant (titre, artiste, style)…" autocomplete="off" oninput="renderIePickList()">
+          <div class="ie-quick">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="ieSelectAll(true)">Tout le répertoire</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="ieSelectAll(false)">Aucune</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="ieSelectResults()">Cocher les résultats</button>
+          </div>
+          <div class="ie-quick">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="ieSelectLast()">🆕 Les</button>
+            <input type="number" id="ie-last-n" value="1" min="1" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <span style="font-size:.82rem; color:var(--text-dim); flex:1;">dernière(s) ajoutée(s) ou modifiée(s)</span>
+          </div>
+          <div id="ie-result-count" class="hint"></div>
+          <div id="ie-pick-list" class="ie-list"></div>
+          <button type="button" class="btn btn-primary btn-full" id="ie-export-btn" onclick="exportSelectedSongs()">⬇️ Exporter la sélection (0)</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1858,7 +1890,6 @@ let state = {
   themeDefaultV2:true,
   fsFontSize:1.7,
   edFontSize:1,
-  lastChangesExportAt:0,
   styles:[
     {id:'s1', name:'Himene', emoji:'🌺'},
     {id:'s2', name:'Ori Tahiti', emoji:'🌴'},
@@ -1966,7 +1997,6 @@ async function loadData(){
     if(Array.isArray(data.songs)) state.songs = data.songs;
     if(Array.isArray(data.medleys)) state.medleys = data.medleys;
     if(data.repProgram && typeof data.repProgram === 'object') state.repProgram = Object.assign({}, state.repProgram, data.repProgram);
-    if(typeof data.lastChangesExportAt === 'number') state.lastChangesExportAt = data.lastChangesExportAt;
   }
   migrateNotationToEnglish();
   ensureRepetitionStyle();
@@ -4556,40 +4586,6 @@ function exportData(){
   setTimeout(()=>URL.revokeObjectURL(url), 2000);
   showSaveIndicator();
 }
-function exportChangedData(){
-  const since = state.lastChangesExportAt || 0;
-  const changedSongs = state.songs.filter(s=>typeof s.modifiedAt === 'number' && s.modifiedAt > since);
-  if(changedSongs.length === 0){
-    alert('Aucune chanson ajoutée ou modifiée depuis le dernier export des changements.');
-    return;
-  }
-  const usedStyleIds = new Set(changedSongs.map(s=>s.styleId));
-  const changedStyles = state.styles.filter(st=>usedStyleIds.has(st.id));
-  const payload = {
-    app:'hitihaunui',
-    changesOnly:true,
-    exportedAt:new Date().toISOString(),
-    theme:state.theme,
-    styles:changedStyles,
-    songs:changedSongs,
-    medleys:[]
-  };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  const d = new Date();
-  const pad = n=>String(n).padStart(2,'0');
-  const stamp = d.getFullYear()+''+pad(d.getMonth()+1)+pad(d.getDate())+'-'+pad(d.getHours())+pad(d.getMinutes());
-  a.href = url;
-  a.download = 'hitihaunui-changements-'+stamp+'.json';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(url), 2000);
-  state.lastChangesExportAt = Date.now();
-  saveData();
-  showSaveIndicator();
-}
 function importData(event){
   const file = event.target.files && event.target.files[0];
   if(!file) return;
@@ -4690,6 +4686,122 @@ function importData(event){
     goto('home', true);
   };
   reader.readAsText(file);
+}
+
+
+/* ============ EXPORT D'UNE SÉLECTION DE CHANSONS ============ */
+let iePickIds = new Set();
+function setIeTab(t){
+  const pick = (t==='pick');
+  document.getElementById('ie-pane-all').style.display = pick ? 'none' : 'flex';
+  document.getElementById('ie-pane-pick').style.display = pick ? 'flex' : 'none';
+  document.getElementById('ie-tab-all').classList.toggle('active', !pick);
+  document.getElementById('ie-tab-pick').classList.toggle('active', pick);
+  if(pick) renderIePickList();
+}
+function ieSortedSongs(){
+  return state.songs.slice().sort((a,b)=>(b.modifiedAt||0)-(a.modifiedAt||0));
+}
+function ieNorm(t){
+  return String(t||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+function ieQuery(){
+  const el = document.getElementById('ie-search');
+  return el ? el.value.trim() : '';
+}
+function ieFilteredSongs(){
+  const q = ieNorm(ieQuery());
+  const all = ieSortedSongs();
+  if(!q) return all;
+  const words = q.split(/\s+/).filter(Boolean);
+  return all.filter(c=>{
+    const st = styleById(c.styleId);
+    const hay = ieNorm((c.title||'')+' '+(c.artist||'')+' '+(st?st.name:''));
+    return words.every(w=>hay.indexOf(w)!==-1);
+  });
+}
+function ieSelectResults(){
+  ieFilteredSongs().forEach(c=>iePickIds.add(c.id));
+  document.querySelectorAll('.ie-check').forEach(cb=>{ cb.checked = iePickIds.has(cb.value); });
+  updateIeCount();
+}
+function ieFmtDate(ts){
+  if(typeof ts !== 'number') return '';
+  try{ return new Date(ts).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'}); }catch(e){ return ''; }
+}
+function renderIePickList(){
+  const wrap = document.getElementById('ie-pick-list');
+  if(!wrap) return;
+  const valid = new Set(state.songs.map(x=>x.id));
+  iePickIds = new Set(Array.from(iePickIds).filter(id=>valid.has(id)));
+  const list = ieFilteredSongs();
+  const rc = document.getElementById('ie-result-count');
+  const q = ieQuery();
+  if(rc) rc.textContent = q ? (list.length+' résultat'+(list.length>1?'s':'')+' sur '+state.songs.length) : '';
+  if(state.songs.length===0){
+    wrap.innerHTML = '<div class="hint">Aucune chanson dans ton répertoire.</div>';
+  } else if(list.length===0){
+    wrap.innerHTML = '<div class="hint">Aucun chant trouvé pour « '+esc(q)+' ».</div>';
+  } else {
+    wrap.innerHTML = list.map(c=>{
+      const st = styleById(c.styleId);
+      const d = ieFmtDate(c.modifiedAt);
+      const sub = [c.artist, st?st.name:'', d].filter(Boolean).map(esc).join(' · ');
+      return `<label class="ie-row"><input type="checkbox" class="song-check ie-check" value="${c.id}"${iePickIds.has(c.id)?' checked':''} onchange="ieToggle(this)"><span class="t"><strong>${esc(c.title)}</strong><span>${sub}</span></span></label>`;
+    }).join('');
+  }
+  updateIeCount();
+}
+function ieToggle(cb){
+  if(cb.checked) iePickIds.add(cb.value); else iePickIds.delete(cb.value);
+  updateIeCount();
+}
+function ieSelectAll(on){
+  iePickIds = on ? new Set(state.songs.map(x=>x.id)) : new Set();
+  document.querySelectorAll('.ie-check').forEach(cb=>{ cb.checked = on; });
+  updateIeCount();
+}
+function ieSelectLast(){
+  const n = Math.max(1, parseInt(document.getElementById('ie-last-n').value,10) || 1);
+  const last = ieSortedSongs().slice(0, n);
+  iePickIds = new Set(last.map(x=>x.id));
+  document.querySelectorAll('.ie-check').forEach(cb=>{ cb.checked = iePickIds.has(cb.value); });
+  updateIeCount();
+}
+function updateIeCount(){
+  const b = document.getElementById('ie-export-btn');
+  if(b) b.textContent = '⬇️ Exporter la sélection ('+iePickIds.size+')';
+}
+function exportSelectedSongs(){
+  const songs = state.songs.filter(x=>iePickIds.has(x.id));
+  if(songs.length===0){ alert('Choisis au moins une chanson à exporter.'); return; }
+  const usedStyleIds = new Set();
+  songs.forEach(x=>{
+    if(x.styleId) usedStyleIds.add(x.styleId);
+    if(Array.isArray(x.extraStyleIds)) x.extraStyleIds.forEach(id=>usedStyleIds.add(id));
+  });
+  const payload = {
+    app:'hitihaunui',
+    selection:true,
+    exportedAt:new Date().toISOString(),
+    theme:state.theme,
+    styles:state.styles.filter(st=>usedStyleIds.has(st.id)),
+    songs:songs,
+    medleys:[]
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const d = new Date();
+  const pad = n=>String(n).padStart(2,'0');
+  const stamp = d.getFullYear()+''+pad(d.getMonth()+1)+pad(d.getDate())+'-'+pad(d.getHours())+pad(d.getMinutes());
+  a.href = url;
+  a.download = 'hitihaunui-selection-'+stamp+'.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  showSaveIndicator();
 }
 
 /* ============ INIT ============ */
