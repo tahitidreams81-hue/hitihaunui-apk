@@ -162,12 +162,12 @@ button{font-family:inherit; color:inherit;}
 .section-label{font-family:'Baloo 2',sans-serif; font-size:1rem; margin:6px 0 12px; color:var(--text-dim); display:flex; align-items:center; gap:8px;}
 
 /* style grid */
-.style-grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px;}
+.style-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px;}
 .style-card{
   background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
   padding:20px 12px; text-align:center; cursor:pointer; box-shadow:var(--shadow);
 }
-.style-card{padding:12px 4px;}
+.style-card{padding:16px 6px;}
 .style-card .ic{font-size:1.6rem; display:block; margin-bottom:4px;}
 .style-card strong{display:block; font-size:.85rem; line-height:1.15; overflow-wrap:anywhere;}
 .style-card .cnt{font-family:'Baloo 2',sans-serif; font-size:.75rem; font-weight:700; line-height:1.1; color:var(--accent); margin-top:4px;}
@@ -240,7 +240,8 @@ button{font-family:inherit; color:inherit;}
 }
 .fs-content{
   width:100%; box-sizing:border-box;
-  padding:calc(24px + var(--safe-top)) 24px calc(80px + var(--safe-bottom));
+  padding:max(calc(96px + var(--safe-top)), 30vh) 24px calc(80px + var(--safe-bottom));
+  padding-top:max(calc(96px + var(--safe-top)), 30dvh);
   max-width:600px; margin:0 auto;
   flex:1;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
@@ -497,15 +498,15 @@ button,.menu-card,.song-item,.style-card,.chip-pick button{touch-action:manipula
 .hint{font-size:.8rem;}
 @media (orientation:landscape){
   .app{max-width:900px;}
-  .style-grid{grid-template-columns:repeat(6,minmax(0,1fr));}
+  .style-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
   #screen-home .menu-grid.g4{grid-template-columns:repeat(4,minmax(0,1fr));}
 }
 /* --- Majuscules partout --- */
 body,input,select,textarea,button,option,label{text-transform:uppercase;}
 input::placeholder,textarea::placeholder{text-transform:uppercase;}
 input[type=url],.chord-badge,.chord-diagram-wrap,.chord-diagram-frets,#chord-diagram-modal *{text-transform:none;}
-.style-card strong{font-size:clamp(.58rem,2.7vw,.8rem); letter-spacing:0;}
-.style-card .cnt{font-size:clamp(.55rem,2.3vw,.72rem);}
+.style-card strong{font-size:clamp(.8rem,3.9vw,1.05rem); letter-spacing:0; line-height:1.15;}
+.style-card .cnt{font-size:clamp(.8rem,3.4vw,1rem); margin-top:6px;}
 #screen-home .menu-card .txt strong{font-size:clamp(.58rem,2.5vw,.78rem); letter-spacing:0;}
 
 /* --- Couleurs des icônes et des paroles : mode sombre / mode clair --- */
@@ -525,7 +526,7 @@ body.theme-light{
 .menu-card .ic,.style-manage-item .ic{display:flex; align-items:center; justify-content:center; background:var(--ic-bg); border:1.5px solid var(--ic-bd); border-radius:14px;}
 #screen-home .menu-card .ic{background:var(--ic-bg); border:1.5px solid var(--ic-bd);}
 #screen-home .menu-grid.g3 .menu-card .ic{background:var(--ic2-bg); border-color:var(--ic2-bd);}
-.style-card .ic{display:flex; width:40px; height:40px; margin:0 auto 4px; align-items:center; justify-content:center; border-radius:50%; background:var(--ic-bg); border:1.5px solid var(--ic-bd); font-size:1.35rem;}
+.style-card .ic{display:flex; width:clamp(56px,18vw,76px); height:clamp(56px,18vw,76px); margin:0 auto 8px; align-items:center; justify-content:center; border-radius:50%; background:var(--ic-bg); border:2px solid var(--ic-bd); font-size:clamp(1.9rem,8.5vw,2.6rem); line-height:1;}
 .pill{background:var(--ic-bg); border:1px solid var(--ic-bd); color:var(--ic-fg); font-weight:700;}
 .home-stat strong{color:var(--ic-fg);}
 .home-stat{border-color:var(--ic-bd);}
@@ -574,10 +575,20 @@ body.theme-light .fs-yt-btn{background:#ffffff; color:#0a3a4a; border:1.5px soli
 #fullscreen-view .fs-body, #fullscreen-view .fs-body *{text-align:center !important;}
 #fullscreen-view .fs-body{display:block; width:100%; min-width:0; margin:0 auto; box-sizing:border-box; overflow-wrap:break-word; word-break:normal; overflow-x:hidden; text-indent:0;}
 #fullscreen-view{overflow-x:hidden;}
-/* --- Intro plein écran : titre + tonalité pendant 5 s --- */
-.fs-intro{position:fixed; inset:0; z-index:1000; display:none; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:24px; box-sizing:border-box; text-align:center; background:#000000; pointer-events:none; opacity:1; transition:opacity .6s ease;}
+/* --- Plein écran : paroles sur toute la largeur/hauteur du téléphone, boutons compacts et translucides --- */
+#fullscreen-view .fs-content{max-width:none; width:100%; padding-left:max(10px, env(safe-area-inset-left,0px)); padding-right:max(10px, env(safe-area-inset-right,0px)); padding-top:calc(64px + var(--safe-top)); padding-bottom:calc(56px + var(--safe-bottom));}
+.fs-fixed-back{top:calc(6px + var(--safe-top)); left:8px; width:42px; height:42px;}
+.fs-fontsize-ctrl{top:calc(6px + var(--safe-top)); right:8px; gap:5px;}
+.fs-scroll-ctrl{bottom:calc(8px + var(--safe-bottom)); right:8px; gap:5px;}
+.fs-prev-btn{bottom:calc(8px + var(--safe-bottom)); left:8px; width:42px; height:42px;}
+.fs-next-btn{left:56px !important;}
+.fs-fontsize-ctrl .fontsize-btn,.fs-scroll-ctrl .fontsize-btn{width:42px; min-width:42px; height:42px; font-size:.85rem;}
+.fs-tempo-badge{height:42px; padding:0 10px; font-size:.85rem;}
+.fs-fontsize-ctrl .fontsize-btn,.fs-scroll-ctrl .fontsize-btn,.fs-prev-btn,.fs-tempo-badge{background:rgba(20,20,20,.78);}
+/* --- Intro plein écran : titre + tonalité seuls pendant 2 s, puis uniquement les paroles --- */
+.fs-intro{position:fixed; inset:0; z-index:100001; display:none; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:24px; box-sizing:border-box; text-align:center; background:#000000; pointer-events:auto; opacity:1; transition:opacity .35s ease;}
 .fs-intro.show{display:flex;}
-.fs-intro.fade{opacity:0;}
+.fs-intro.fade{opacity:0; pointer-events:none;}
 .fs-intro-title{font-family:'Baloo 2',sans-serif; text-transform:uppercase; font-weight:800; font-size:clamp(1.9rem,9vw,3.4rem); line-height:1.1; letter-spacing:1px; color:#ffe27a; overflow-wrap:anywhere; max-width:100%;}
 .fs-intro-key{font-weight:800; font-size:clamp(1.3rem,6vw,2.2rem); color:#3ef0c0; background:#141414; border:1.5px solid rgba(255,255,255,.25); border-radius:999px; padding:8px 26px;}
 body.theme-light .fs-intro{background:#ffffff;}
@@ -587,6 +598,27 @@ body.theme-light .fs-intro-key{color:#067560; background:#e2f3ef; border-color:r
 #screen-home .hero{padding-left:68px; padding-right:68px;}
 #screen-home .hero-gear{top:calc(50% + var(--safe-top) / 2); right:max(12px, env(safe-area-inset-right,0px)); transform:translateY(-50%); display:flex; align-items:center; justify-content:center; padding:0; line-height:1;}
 #screen-home .hero-gear:active{transform:translateY(-50%) scale(.94);}
+
+/* ---- Tableau de notes : couleur (clair/sombre) + taille réglables ---- */
+:root{--note-scale:1;}
+body.theme-dark .lyrics-box rt,body.theme-dark .editable rt,body.theme-dark .fs-body rt,
+body.theme-light .lyrics-box rt,body.theme-light .editable rt,body.theme-light .fs-body rt{color:var(--note) !important;}
+body .lyrics-box rt{font-size:calc(.6em * var(--note-scale));}
+body .fs-body rt{font-size:calc(.55em * var(--note-scale));}
+body .editable rt{font-size:calc(.6em * var(--note-scale));}
+body .editable ruby.line-note rt{font-size:calc(.85em * var(--note-scale));}
+body .note-chip{font-size:calc(.8rem * var(--note-scale));}
+.note-pref{margin-top:10px; padding-top:8px; border-top:1px dashed var(--border);}
+.note-pref .lbl2{font-size:.72rem; color:var(--text-dim); font-weight:700; margin-bottom:6px;}
+.note-colors{display:flex; flex-wrap:wrap; gap:8px; align-items:center;}
+.note-color-sw{width:30px; height:30px; border-radius:50%; border:2px solid var(--border); cursor:pointer; padding:0; touch-action:manipulation;}
+.note-color-sw.active{outline:3px solid var(--accent); outline-offset:2px;}
+.note-color-custom{width:34px; height:34px; border:none; background:none; padding:0; cursor:pointer;}
+.note-size-row{display:flex; align-items:center; gap:8px;}
+.note-size-row input[type=range]{flex:1; min-width:0; accent-color:var(--accent);}
+.note-size-val{min-width:42px; text-align:right; font-weight:800; font-size:.8rem; color:var(--accent);}
+.note-pref-reset{margin-top:8px; width:100%;}
+.note-preview{margin-top:8px; text-align:center; font-weight:700; text-transform:none;}
 </style>
 </head>
 <body class="theme-light">
@@ -1106,6 +1138,16 @@ body.theme-light .fs-intro-key{color:#067560; background:#e2f3ef; border-color:r
               <div class="lbl" style="font-size:.72rem; color:var(--text-dim); font-weight:700;">🎹 Tableau des notes — touche pour choisir</div>
               <div class="note-grid-current">Note choisie : <strong id="note-grid-current-value">—</strong></div>
               <div class="note-grid" id="note-grid"></div>
+              <div class="note-pref">
+                <div class="lbl2" id="note-color-label">🎨 Couleur des notes</div>
+                <div class="note-colors" id="note-colors"></div>
+                <div class="lbl2" style="margin-top:10px;">🔠 Taille du texte des notes</div>
+                <div class="note-size-row">
+                  <input type="range" id="note-size-range" min="70" max="220" step="5" value="100" oninput="setNoteScale(this.value)">
+                  <span class="note-size-val" id="note-size-val">100%</span>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm note-pref-reset" onclick="resetNotePrefs()">↺ Réinitialiser couleur et taille</button>
+              </div>
             </div>
           </div>
         </div>
@@ -1424,6 +1466,54 @@ function pickNoteFromGrid(note){
   if(hint && (noteMode==='place' || noteMode==='line')){
     hint.textContent = 'Note « '+note+' » choisie : touche directement '+(noteMode==='line' ? 'juste avant/après une ligne' : 'une lettre des paroles')+' pour la poser. Tu peux la poser plusieurs fois.';
   }
+}
+
+
+/* ============ COULEUR + TAILLE DES NOTES (clair / sombre) ============ */
+const NOTE_PALETTES = {
+  dark:  ['#3ef0c0','#ffd60a','#ff7a99','#7cc4ff','#ffffff','#ffa94d','#c792ff'],
+  light: ['#c21f48','#067560','#0a5fb4','#7a2fb8','#9a6200','#0d2b28','#d9480f']
+};
+const NOTE_DEFAULTS = {dark:'#3ef0c0', light:'#c21f48'};
+function noteThemeKey(){ return document.body.classList.contains('theme-light') ? 'light' : 'dark'; }
+function loadNotePref(k, def){ try{ const v = localStorage.getItem(k); return v || def; }catch(e){ return def; } }
+function saveNotePref(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+function currentNoteColor(){
+  const t = noteThemeKey();
+  return loadNotePref(t==='light' ? 'noteColorLight' : 'noteColorDark', NOTE_DEFAULTS[t]);
+}
+function applyNotePrefs(){
+  const t = noteThemeKey();
+  const color = currentNoteColor();
+  document.body.style.setProperty('--note', color);
+  let sc = parseInt(loadNotePref('noteScale','100'),10);
+  if(!(sc>=70 && sc<=220)) sc = 100;
+  document.documentElement.style.setProperty('--note-scale', (sc/100).toString());
+  const r = document.getElementById('note-size-range'); if(r) r.value = sc;
+  const v = document.getElementById('note-size-val'); if(v) v.textContent = sc+'%';
+  const lbl = document.getElementById('note-color-label');
+  if(lbl) lbl.textContent = t==='light' ? '🎨 Couleur des notes (mode clair)' : '🎨 Couleur des notes (mode sombre)';
+  const box = document.getElementById('note-colors');
+  if(box){
+    const pal = NOTE_PALETTES[t];
+    const isCustom = pal.indexOf(color.toLowerCase()) === -1;
+    box.innerHTML = pal.map(c=>
+      `<button type="button" class="note-color-sw${c===color.toLowerCase()?' active':''}" style="background:${c}" onmousedown="event.preventDefault()" onclick="setNoteColor('${c}')" title="${c}"></button>`
+    ).join('') +
+    `<input type="color" class="note-color-custom${isCustom?' active':''}" value="${/^#[0-9a-f]{6}$/i.test(color)?color:NOTE_DEFAULTS[t]}" onchange="setNoteColor(this.value)" title="Autre couleur">`;
+  }
+}
+function setNoteColor(c){
+  saveNotePref(noteThemeKey()==='light' ? 'noteColorLight' : 'noteColorDark', c);
+  applyNotePrefs();
+}
+function setNoteScale(v){
+  saveNotePref('noteScale', String(parseInt(v,10)||100));
+  applyNotePrefs();
+}
+function resetNotePrefs(){
+  try{ localStorage.removeItem('noteColorLight'); localStorage.removeItem('noteColorDark'); localStorage.removeItem('noteScale'); }catch(e){}
+  applyNotePrefs();
 }
 
 /* ============ EDITION DES PAROLES EN PLEIN ECRAN (zoom + tableau de notes) ============ */
@@ -1943,6 +2033,7 @@ function applyTheme(){
     sw.classList.remove('on');
     desc.textContent = 'Sombre — lagon de nuit';
   }
+  if(typeof applyNotePrefs === 'function') applyNotePrefs();
 }
 function toggleTheme(){
   state.theme = state.theme === 'light' ? 'dark' : 'light';
@@ -3154,13 +3245,14 @@ function fsShowIntro(c){
   const el = document.getElementById('fs-intro');
   if(!el || !c) return;
   clearTimeout(fsIntroTimer); clearTimeout(fsIntroTimer2);
+  clearTimeout(fsHideTimer); fsHideUi(); /* uniquement titre + note, puis uniquement les paroles */
   document.getElementById('fs-intro-title').textContent = (c.title||'').toUpperCase();
   const k = document.getElementById('fs-intro-key');
   k.textContent = c.key ? '🎹 '+c.key : '';
   k.style.display = c.key ? '' : 'none';
   el.classList.remove('fade'); el.classList.add('show');
-  fsIntroTimer = setTimeout(()=>{ el.classList.add('fade'); }, 2400);
-  fsIntroTimer2 = setTimeout(()=>{ el.classList.remove('show','fade'); }, 3000);
+  fsIntroTimer = setTimeout(()=>{ el.classList.add('fade'); }, 650);
+  fsIntroTimer2 = setTimeout(()=>{ el.classList.remove('show','fade'); }, 1000);
 }
 function fsHideIntro(){
   clearTimeout(fsIntroTimer); clearTimeout(fsIntroTimer2);
@@ -3196,7 +3288,7 @@ function fsUiEls(){
 function fsShowUi(){
   fsUiEls().forEach(el=>el.classList.remove('fs-hidden'));
   clearTimeout(fsHideTimer);
-  fsHideTimer = setTimeout(fsHideUi, 5000);
+  fsHideTimer = setTimeout(fsHideUi, 2000);
 }
 function fsHideUi(){
   fsUiEls().forEach(el=>el.classList.add('fs-hidden'));
@@ -3264,7 +3356,7 @@ function enterFullscreen(){
   document.getElementById('fs-scroll-ctrl').style.display = 'flex';
   updateFsNavButtons();
   window.scrollTo(0,0);
-  fsShowUi();
+  clearTimeout(fsHideTimer); fsHideUi();
   fsKeepAwake(true);
 }
 function advanceFullscreenSong(){
@@ -4668,6 +4760,7 @@ try{
 buildNoteOptions();
 buildNoteGrid();
 loadData();
+applyNotePrefs();
 </script>
 </body>
 </html>
